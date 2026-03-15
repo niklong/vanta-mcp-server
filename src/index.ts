@@ -3,8 +3,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAllOperations } from "./registry.js";
-import { initializeToken } from "./auth.js";
-import { getEnabledToolNames, hasEnabledToolFilter } from "./config.js";
+import {
+  enabledToolsSource,
+  getEnabledToolNames,
+  hasEnabledToolFilter,
+} from "./config.js";
 
 const server = new McpServer({
   name: "vanta-mcp",
@@ -13,24 +16,27 @@ const server = new McpServer({
 
 async function main() {
   try {
-    await initializeToken();
-    console.error("Token initialized successfully");
-
     // Register all tools automatically
     await registerAllOperations(server);
 
     if (hasEnabledToolFilter) {
       const enabledTools = getEnabledToolNames();
+      const sourceLabel =
+        enabledToolsSource === "env" ? "VANTA_MCP_ENABLED_TOOLS" : "default config";
       console.error(
-        `⚠️ Tools enabled via VANTA_MCP_ENABLED_TOOLS: ${enabledTools.join(", ")}`,
+        `⚠️ Tools enabled via ${sourceLabel}: ${enabledTools.join(", ")}`,
       );
+    } else if (enabledToolsSource === "env-all") {
+      console.error("⚠️ All tools enabled via VANTA_MCP_ENABLED_TOOLS");
     }
 
     // Connect to stdio transport
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    console.error("🚀 Vanta MCP Server started successfully!");
+    console.error(
+      "🚀 Vanta MCP Server started successfully; OAuth token will be fetched on first tool call",
+    );
   } catch (error) {
     console.error("Failed to start Vanta MCP Server:", error);
     process.exit(1);
