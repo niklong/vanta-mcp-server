@@ -17,3 +17,11 @@ if [[ ! -x "$ROOT_DIR/build/index.js" ]]; then
 fi
 
 exec /usr/bin/node "$ROOT_DIR/build/index.js"
+
+# Claude Desktop
+#  "mcpServers": {
+#    "vanta": {
+#      "command": "/home/nik/Projects/kanopi/vanta-mcp-server/run.sh",
+#      "args": []
+#    }
+#  }
